@@ -1,0 +1,98 @@
+import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+void main() {
+  runApp(MyApp());
+}
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'REST API Demo',
+      home: PostListScreen(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+class PostListScreen extends StatefulWidget {
+  @override
+  _PostListScreenState createState() => _PostListScreenState();
+}
+class _PostListScreenState extends State<PostListScreen> {
+  Future<List<dynamic>> fetchPosts() async {
+    final response = await http  .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      List<dynamic> englishData = data.map((post) {
+        return {
+          'id': post['id'],
+          'title': 'Post ${post['id']}: Flutter REST API Example',
+          'body':
+              'This is a simple English description for post number ${post['id']}. '
+                  'It demonstrates how to fetch and display data using Flutter and REST API.'
+        };
+      }).toList();
+      return englishData;
+    } else {
+      throw Exception('Failed to load posts');
+    }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("REST API Data (English)"),
+        centerTitle: true,
+      ),
+      body: FutureBuilder<List<dynamic>>(
+        future: fetchPosts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No posts available'));
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                var post = snapshot.data![index];
+                return Card(
+                  elevation: 4,
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue[900],
+                      child: Text(
+                        post['id'].toString(),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    title: Text(
+                      post['title'],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    subtitle: Text(
+                      post['body'],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.black54),
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
