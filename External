@@ -1,0 +1,88 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ResponsiveHome(),
+    ));
+
+class ResponsiveHome extends StatefulWidget {
+  @override
+  State<ResponsiveHome> createState() => _ResponsiveHomeState();
+}
+
+class _ResponsiveHomeState extends State<ResponsiveHome> {
+  String page = 'Home';
+  final pages = {
+    'Home': 'Welcome to the Home Page!',
+    'About': 'This is the About Page.',
+    'Services': 'Here are our Services.',
+    'Contact': 'Contact us at example@flutter.dev',
+    'Feedback': 'Give us your Feedback!',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final small = width < 600;
+    final titles = pages.keys.toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Design',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.green[800],
+        actions: small
+            ? [
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onSelected: (v) => setState(() => page = v),
+                  itemBuilder: (_) => titles
+                      .map((t) => PopupMenuItem(
+                            value: t,
+                            child: Text(t.toUpperCase(),
+                                style: TextStyle(
+                                    color: page == t
+                                        ? Colors.green[900]
+                                        : Colors.red[800],
+                                    fontWeight: page == t
+                                        ? FontWeight.bold
+                                        : FontWeight.normal)),
+                          ))
+                      .toList(),
+                )
+              ]
+            : titles
+                .map((t) => TextButton(
+                      onPressed: () => setState(() => page = t),
+                      child: Text(t.toUpperCase(),
+                          style: TextStyle(
+                              color:
+                                  page == t ? Colors.white : Colors.white70,
+                              fontWeight: page == t
+                                  ? FontWeight.bold
+                                  : FontWeight.normal)),
+                    ))
+                .toList(),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(
+                "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1920&q=80"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            width: small ? double.infinity : width * 0.7,
+            color: Colors.white.withOpacity(0.85),
+            child: Text(pages[page]!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 24)),
+          ),
+        ),
+      ),
+    );
+  }
+}
